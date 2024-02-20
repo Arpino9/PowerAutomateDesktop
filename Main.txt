@@ -1,0 +1,35 @@
+
+FUNCTION Main_copy GLOBAL
+    Display.SelectFolder Description: $'''取得したい画像が入ったフォルダを選択してください。''' IsTopMost: True SelectedFolder=> SelectedFolder ButtonPressed=> ButtonPressed2
+    Display.SelectFromListDialog.SelectFromList Title: $'''確認''' Message: $'''サブフォルダを含めますか？''' List: $'''はい
+いいえ''' IsTopMost: False AllowEmpty: False SelectedItem=> SelectedItem SelectedIndex=> SelectedIndex ButtonPressed=> ButtonPressed3
+    IF SelectedItem = $'''はい''' THEN
+        Folder.GetFiles Folder: SelectedFolder FileFilter: $'''*jpg;*gif;*png''' IncludeSubfolders: True FailOnAccessDenied: True SortBy1: Folder.SortBy.NoSort SortDescending1: False SortBy2: Folder.SortBy.NoSort SortDescending2: False SortBy3: Folder.SortBy.NoSort SortDescending3: False Files=> SelectedFiles
+    ELSE
+        Folder.GetFiles Folder: SelectedFolder FileFilter: $'''*jpg;*gif;*png''' IncludeSubfolders: False FailOnAccessDenied: True SortBy1: Folder.SortBy.NoSort SortDescending1: False SortBy2: Folder.SortBy.NoSort SortDescending2: False SortBy3: Folder.SortBy.NoSort SortDescending3: False Files=> SelectedFiles
+    END
+    SET index TO 0
+    Excel.LaunchExcel.LaunchUnderExistingProcess Visible: True Instance=> ExcelInstance
+    LOOP FOREACH SelectedFile IN SelectedFiles
+        OCR.ExtractTextWithOCR.ExtractTextFromFileWithCustomTesseract ImageFile: SelectedFile LanguageAbbreviation: $'''jpn''' LanguageDataPath: $'''C:\\Program Files\\Tesseract-OCR\\tessdata''' ImageWidthMultiplier: 1 ImageHeightMultiplier: 1 OcrText=> OcrText
+        Text.SplitText.SplitWithDelimiter Text: OcrText CustomDelimiter: $'''\\n''' IsRegEx: True Result=> TextList
+        # 余分な空白を消す
+        Variables.CreateNewList List=> List
+        SET row TO 1
+        LOOP FOREACH CurrentItem IN TextList
+            IF CurrentItem <> $'''%' '%''' THEN
+                IF CurrentItem <> $'''%''%''' THEN
+                    Variables.AddItemToList Item: CurrentItem List: List
+                END
+            END
+        END
+        Variables.IncreaseVariable Value: index IncrementValue: 1
+        IF index = 1 THEN
+            Excel.WriteToExcel.WriteCell Instance: ExcelInstance Value: List Column: 1 Row: 1
+            Excel.RenameWorksheet.RenameWorksheetWithIndex Instance: ExcelInstance Index: index NewName: SelectedFile.NameWithoutExtension
+        ELSE IF $'''index''' <> SelectedFiles.Count THEN
+            Excel.AddWorksheet Instance: ExcelInstance Name: SelectedFiles[index - 1].NameWithoutExtension WorksheetPosition: Excel.WorksheetPosition.Last
+            Excel.WriteToExcel.WriteCell Instance: ExcelInstance Value: List Column: 1 Row: 1
+        END
+    END
+END FUNCTION
