@@ -1,0 +1,9 @@
+
+FUNCTION Main_copy GLOBAL
+    Display.SelectFileDialog.SelectFile Title: $'''シート名を取得したいExcelを選択してください''' FileFilter: $'''*.xlsx;.*xls;''' IsTopMost: False CheckIfFileExists: False SelectedFile=> SelectedFile ButtonPressed=> ButtonPressed
+    Excel.LaunchExcel.LaunchAndOpenUnderExistingProcess Path: SelectedFile Visible: True ReadOnly: False Instance=> ExcelInstance
+    Excel.GetAllWorksheets Instance: ExcelInstance Worksheets=> SheetNames
+    Excel.CloseExcel.Close Instance: ExcelInstance
+    Excel.LaunchExcel.LaunchUnderExistingProcess Visible: True Instance=> ExcelInstance
+    Excel.WriteToExcel.WriteCell Instance: ExcelInstance Value: SheetNames Column: 1 Row: 1
+END FUNCTION
