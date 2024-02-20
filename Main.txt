@@ -1,0 +1,18 @@
+
+FUNCTION Main_copy GLOBAL
+    Display.SelectFolder Description: $'''PDF化するフォルダを選択''' IsTopMost: True SelectedFolder=> SelectedFolder ButtonPressed=> ButtonPressed
+    IF ButtonPressed = $'''Cancel''' THEN
+        EXIT Code: 0
+    END
+    Display.SelectFromListDialog.SelectFromList Title: $'''ダイアログ''' Message: $'''サブフォルダを含めますか？''' List: $'''はい
+いいえ''' IsTopMost: True AllowEmpty: False SelectedItem=> SelectedItem SelectedIndex=> SelectedIndex ButtonPressed=> ButtonPressed
+    IF ButtonPressed = $'''Cancel''' THEN
+        EXIT Code: 0
+    END
+    IF SelectedItem = $'''はい''' THEN
+        Folder.GetFiles Folder: SelectedFolder FileFilter: $'''*.xlsx''' IncludeSubfolders: True FailOnAccessDenied: True SortBy1: Folder.SortBy.NoSort SortDescending1: False SortBy2: Folder.SortBy.NoSort SortDescending2: False SortBy3: Folder.SortBy.NoSort SortDescending3: False Files=> ExcelFiles
+    ELSE
+        Folder.GetFiles Folder: SelectedFolder FileFilter: $'''*.xlsx''' IncludeSubfolders: False FailOnAccessDenied: True SortBy1: Folder.SortBy.NoSort SortDescending1: False SortBy2: Folder.SortBy.NoSort SortDescending2: False SortBy3: Folder.SortBy.NoSort SortDescending3: False Files=> ExcelFiles
+    END
+    CALL PrintExcel
+END FUNCTION
