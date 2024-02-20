@@ -1,0 +1,23 @@
+
+FUNCTION Main_copy GLOBAL
+    Display.SelectFileDialog.SelectFile Title: $'''文字起こしするPDFを選択してください''' InitialDirectory: $'''C:\\''' FileFilter: $'''*.pdf*''' IsTopMost: True CheckIfFileExists: True SelectedFile=> SelectedFile ButtonPressed=> ButtonPressed
+    File.GetPathPart File: SelectedFile RootPath=> RootPath Directory=> Directory FileName=> FileName
+    Text.Replace Text: FileName TextToFind: $'''.pdf''' IsRegEx: False IgnoreCase: False ReplaceWith: $'''%''%''' ActivateEscapeSequences: False Result=> Replaced
+    Pdf.ExtractTextFromPDF.ExtractText PDFFile: SelectedFile DetectLayout: True ExtractedText=> ExtractedPDFText
+ON ERROR
+
+END
+    IF ExtractedPDFText = $'''%''%''' THEN
+        Display.ShowMessageDialog.ShowMessage Title: $'''エラー''' Message: $'''読み込み可能な文字列が含まれていません。''' Icon: Display.Icon.ErrorIcon Buttons: Display.Buttons.OK DefaultButton: Display.DefaultButton.Button1 IsTopMost: True ButtonPressed=> ButtonPressed2
+        EXIT Code: 0
+    END
+    Text.SplitText.Split Text: ExtractedPDFText StandardDelimiter: Text.StandardDelimiter.NewLine DelimiterTimes: 1 Result=> TextList
+    SET Row TO 1
+    SET Column TO 1
+    Excel.LaunchExcel.LaunchUnderExistingProcess Visible: True Instance=> ExcelInstance
+    Excel.WriteToExcel.Write Instance: ExcelInstance Value: TextList
+    Excel.CloseExcel.CloseAndSaveAs Instance: ExcelInstance DocumentFormat: Excel.ExcelFormat.OpenXmlWorkbook DocumentPath: Directory.FullName + '\\' + Replaced + '.xlsx'
+ON ERROR
+
+END
+END FUNCTION
