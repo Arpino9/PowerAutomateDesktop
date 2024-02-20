@@ -1,0 +1,22 @@
+
+FUNCTION Main_copy GLOBAL
+    Display.SelectFileDialog.SelectFile Title: $'''文字を読み取る画像ファイルを選択してください。''' FileFilter: $'''*.jpg;*.gif;*.png;*.tiff''' IsTopMost: True CheckIfFileExists: False SelectedFile=> SelectedFile ButtonPressed=> ButtonPressed
+    IF ButtonPressed = $'''Cancel''' THEN
+        EXIT Code: 0
+    END
+    OCR.ExtractTextWithOCR.ExtractTextFromFileWithCustomTesseract ImageFile: SelectedFile LanguageAbbreviation: $'''jpn''' LanguageDataPath: $'''C:\\Program Files\\Tesseract-OCR\\tessdata''' ImageWidthMultiplier: 1 ImageHeightMultiplier: 1 OcrText=> OcrText
+    Text.SplitText.SplitWithDelimiter Text: OcrText CustomDelimiter: $'''\\n''' IsRegEx: True Result=> TextList
+    # 余分な空白を消す
+    Variables.CreateNewList List=> List
+    Excel.LaunchExcel.LaunchUnderExistingProcess Visible: True Instance=> ExcelInstance
+    SET row TO 1
+    LOOP FOREACH CurrentItem IN TextList
+        IF CurrentItem <> $'''%' '%''' THEN
+            IF CurrentItem <> $'''%''%''' THEN
+                Variables.AddItemToList Item: CurrentItem List: List
+            END
+        END
+    END
+    Excel.WriteToExcel.WriteCell Instance: ExcelInstance Value: List Column: 1 Row: 1
+    Excel.RenameWorksheet.RenameWorksheetWithName Instance: ExcelInstance Name: $'''Sheet1''' NewName: SelectedFile.NameWithoutExtension
+END FUNCTION
