@@ -1,0 +1,18 @@
+
+FUNCTION Main_copy GLOBAL
+    Display.SelectFileDialog.SelectFile Title: $'''分割するPDFを選択してください。''' FileFilter: $'''*.pdf''' IsTopMost: True CheckIfFileExists: False SelectedFile=> SelectedFile ButtonPressed=> ButtonPressed
+    IF ButtonPressed = $'''Cancel''' THEN
+        EXIT Code: 0
+    END
+    IF ButtonPressed = $'''Cancel''' THEN
+        EXIT Code: 0
+    END
+    LOOP LoopIndex FROM 1 TO 9999 STEP 1
+        SET SavingPath TO SelectedFile.Directory + '/' + SelectedFile.NameWithoutExtension + '_' + LoopIndex + '.pdf'
+        Pdf.ExtractPages PDFFile: SelectedFile PageSelection: LoopIndex ExtractedPDFPath: SavingPath IfFileExists: Pdf.IfFileExists.DoNotModifyFiles ExtractedPDFFile=> ExtractedPDF
+    ON ERROR
+        GOTO LoopEnd
+    END
+    END
+    LABEL LoopEnd
+END FUNCTION
