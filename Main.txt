@@ -1,0 +1,15 @@
+
+FUNCTION Main_copy GLOBAL
+    Display.SelectFolder Description: $'''結合するPDFが入ったファイルを選択してください''' IsTopMost: False SelectedFolder=> SelectedFolder ButtonPressed=> ButtonPressed
+    IF ButtonPressed = $'''Cancel''' THEN
+        EXIT Code: 0
+    END
+    Display.InputDialog Title: $'''PDF名の指定''' Message: $'''結合済みのPDF名を入力してください。''' DefaultValue: $'''merged''' InputType: Display.InputType.SingleLine IsTopMost: True UserInput=> PDFName ButtonPressed=> ButtonPressed
+    IF ButtonPressed = $'''Cancel''' THEN
+        EXIT Code: 0
+    END
+    Folder.GetFiles Folder: SelectedFolder FileFilter: $'''*.pdf''' IncludeSubfolders: False FailOnAccessDenied: True SortBy1: Folder.SortBy.NoSort SortDescending1: False SortBy2: Folder.SortBy.NoSort SortDescending2: False SortBy3: Folder.SortBy.NoSort SortDescending3: False Files=> Files
+    Folder.GetSpecialFolder SpecialFolder: Folder.SpecialFolder.DesktopDirectory SpecialFolderPath=> SpecialFolderPath
+    SET SavingPath TO SpecialFolderPath + '\\' + PDFName + '.pdf'
+    Pdf.MergeFiles PDFFiles: Files MergedPDFPath: SavingPath IfFileExists: Pdf.IfFileExists.AddSequentialSuffix PasswordDelimiter: $''',''' MergedPDF=> MergedPDF
+END FUNCTION
