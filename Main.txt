@@ -1,0 +1,10 @@
+
+FUNCTION Main_copy GLOBAL
+    Display.SelectFromListDialog.SelectFromList Title: $'''コマンドプロンプト''' Message: $'''実行するコマンドを選択してください。''' List: $'''ipconfig
+ipconfig/all''' IsTopMost: True AllowEmpty: False SelectedItem=> SelectedItem SelectedIndex=> SelectedIndex ButtonPressed=> ButtonPressed
+    Cmd.Open.Open Session=> CmdSession
+    Cmd.Write Session: CmdSession Command: SelectedItem SendEnter: True
+    Cmd.ReadFromCmdSession.Read Session: CmdSession CmdOutput=> CmdOutput
+    Cmd.Close Session: CmdSession
+    Display.ShowMessageDialog.ShowMessage Title: SelectedItem Message: CmdOutput Icon: Display.Icon.None Buttons: Display.Buttons.OK DefaultButton: Display.DefaultButton.Button1 IsTopMost: False ButtonPressed=> ButtonPressed2
+END FUNCTION
